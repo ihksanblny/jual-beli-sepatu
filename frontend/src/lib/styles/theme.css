@@ -1,0 +1,43 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+@theme {
+  /* Brand Colors */
+  --color-primary: #2563eb;
+  --color-primary-pressed: #1d4ed8;
+  --color-primary-active: #1e40af;
+  --color-primary-light: #dbeafe;
+  
+  --color-accent: #f59e0b;
+  --color-commerce: #ef4444;
+  --color-commerce-pressed: #dc2626;
+  --color-success: #10b981;
+  
+  /* Canvas / Backgrounds */
+  --color-canvas-dark: #0a0a0f;
+  --color-canvas-light: #ffffff;
+  --color-canvas-subtle: #f8fafc;
+  
+  /* Surface Colors */
+  --color-surface-dark-elevated: #13131a;
+  --color-surface-dark-card: #1a1a24;
+  --color-surface-soft: #f1f5f9;
+  --color-surface-card: #ffffff;
+  --color-surface-border: #e2e8f0;
+  
+  /* Ink / Text Colors */
+  --color-ink: #0f172a;
+  --color-ink-deep: #1e293b;
+  --color-ink-elevated: #334155;
+  --color-ink-muted: #64748b;
+  
+  /* Fonts */
+  --font-sans: "Plus Jakarta Sans", sans-serif;
+  --font-display: "Plus Jakarta Sans", sans-serif;
+  
+  /* Spacing */
+  --spacing-section: 96px;
+  
+  /* Radius */
+  --radius-pill: 9999px;
+  --radius-card: 12px;
+}

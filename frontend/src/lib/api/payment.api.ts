@@ -1,0 +1,25 @@
+import axios from 'axios';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
+
+const api = axios.create({
+  baseURL: API_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('authToken');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+export const paymentApi = {
+  createIntent: async (amount: number, currency: string = 'usd') => {
+    const response = await api.post('/payment/intent', { amount, currency });
+    return response.data;
+  },
+};
