@@ -103,6 +103,7 @@
                       onclick={() => updateQty(item._id, Math.max(1, item.quantity - 1))}
                       class="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-primary transition-colors"
                       disabled={item.quantity <= 1}
+                      aria-label="Decrease quantity"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
@@ -112,6 +113,7 @@
                     <button 
                       onclick={() => updateQty(item._id, item.quantity + 1)}
                       class="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-primary transition-colors"
+                      aria-label="Increase quantity"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />

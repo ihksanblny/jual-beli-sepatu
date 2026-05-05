@@ -15,6 +15,10 @@
     ? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(product.discountPrice)
     : null);
 
+  const isNew = $derived(product.createdAt 
+    ? (new Date().getTime() - new Date(product.createdAt).getTime()) < 7 * 24 * 60 * 60 * 1000
+    : false);
+
   const isInWishlist = $derived(wishlist.isInWishlist(product._id, $wishlist.items));
   let wishlistLoading = $state(false);
 
@@ -39,19 +43,31 @@
 <div class="group bg-surface-card rounded-md overflow-hidden transition-all hover:shadow-lg flex flex-col h-full">
   <a href="/products/{product._id}" class="aspect-video bg-gray-200 relative overflow-hidden block">
     {#if product.images && product.images.length > 0}
-      <img 
-        src={product.images[0].url} 
-        alt={product.images[0].altText || product.name}
-        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-      />
+        <img 
+          src={product.images[0].url} 
+          alt={product.images[0].altText || product.name}
+          loading="lazy"
+          class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+        />
     {:else}
       <div class="absolute inset-0 flex items-center justify-center text-gray-400 font-bold italic text-xl">
         NO IMAGE
       </div>
     {/if}
     
-    {#if product.featured}
-      <div class="absolute top-4 left-4 bg-primary text-white text-[10px] font-bold px-2 py-1 rounded-pill uppercase tracking-wider">
+    {#if isNew}
+      <div class="absolute top-4 left-4 z-10 flex flex-col gap-2">
+        <div class="bg-commerce text-white text-[10px] font-bold px-3 py-1 rounded-pill uppercase tracking-widest shadow-lg shadow-commerce/20">
+          New Arrival
+        </div>
+        {#if product.featured}
+          <div class="bg-primary text-white text-[10px] font-bold px-3 py-1 rounded-pill uppercase tracking-widest shadow-lg shadow-primary/20">
+            Featured
+          </div>
+        {/if}
+      </div>
+    {:else if product.featured}
+      <div class="absolute top-4 left-4 z-10 bg-primary text-white text-[10px] font-bold px-3 py-1 rounded-pill uppercase tracking-widest shadow-lg shadow-primary/20">
         Featured
       </div>
     {/if}

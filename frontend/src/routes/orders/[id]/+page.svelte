@@ -56,7 +56,7 @@
 <div class="bg-surface-soft min-h-screen py-spacing-section px-12">
   <div class="max-w-4xl mx-auto">
     <div class="mb-8 flex items-center gap-4">
-      <a href="/orders" class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm hover:bg-gray-50 transition-colors">
+      <a href="/orders" aria-label="Back to orders" class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm hover:bg-gray-50 transition-colors">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-ink" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
         </svg>

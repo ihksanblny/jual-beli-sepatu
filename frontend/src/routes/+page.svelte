@@ -1,20 +1,24 @@
 <script lang="ts">
   import { auth } from "$lib/stores/auth";
   import { productApi } from "$lib/api/product.api";
+  import ProductCard from "$lib/components/ProductCard.svelte";
   import { onMount } from "svelte";
 
   let recentProducts = $state<any[]>([]);
+  let featuredProducts = $state<any[]>([]);
   let loading = $state(true);
 
   onMount(async () => {
     try {
-      const response = await productApi.getProducts({
-        limit: 8,
-        sort: "-createdAt",
-      });
-      recentProducts = response.products || [];
+      const [recentRes, featuredRes] = await Promise.all([
+        productApi.getProducts({ limit: 8, sort: "-createdAt" }),
+        productApi.getProducts({ limit: 4, featured: true })
+      ]);
+      
+      recentProducts = recentRes.products || [];
+      featuredProducts = featuredRes.products || [];
     } catch (error) {
-      console.error("Failed to fetch recent products:", error);
+      console.error("Failed to fetch products:", error);
     } finally {
       loading = false;
     }
@@ -208,6 +212,33 @@
 </section>
 
 <!-- ============================================ -->
+<!-- FEATURED SELECTION                           -->
+<!-- ============================================ -->
+{#if featuredProducts.length > 0}
+  <section class="py-24 bg-white border-y border-canvas-subtle">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="flex flex-col md:flex-row justify-between items-end mb-16">
+        <div class="max-w-xl">
+          <span class="text-primary font-bold text-xs uppercase tracking-widest mb-3 block">Handpicked for you</span>
+          <h2 class="text-5xl font-display font-bold text-ink leading-tight">Featured Selection</h2>
+          <p class="text-ink-muted mt-4 text-lg">Curated styles that define the season. Elevate your rotation with our top picks.</p>
+        </div>
+        <a href="/products?featured=true" class="mt-6 md:mt-0 inline-flex items-center gap-2 text-ink font-bold hover:text-primary transition-colors pb-1 border-b-2 border-primary/20">
+          Explore All Featured
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+        </a>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        {#each featuredProducts as product}
+          <ProductCard {product} />
+        {/each}
+      </div>
+    </div>
+  </section>
+{/if}
+
+<!-- ============================================ -->
 <!-- NEW ARRIVALS SECTION                         -->
 <!-- ============================================ -->
 <section class="bg-canvas-subtle py-24 px-6">
@@ -241,48 +272,7 @@
         </div>
       {:else}
         {#each recentProducts as product}
-          <a
-            href="/products/{product._id}"
-            class="group bg-white rounded-2xl overflow-hidden border border-surface-border hover:shadow-xl hover:border-primary/20 transition-all duration-300 block"
-          >
-            <div class="aspect-square bg-canvas-subtle relative overflow-hidden">
-              {#if product.images && product.images.length > 0}
-                <img
-                  src={product.images[0].url}
-                  alt={product.name}
-                  class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                />
-              {:else}
-                <div class="absolute inset-0 flex flex-col items-center justify-center text-ink-muted/30 gap-2">
-                  <svg class="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                  <span class="text-xs">No Image</span>
-                </div>
-              {/if}
-              {#if product.featured}
-                <div class="absolute top-3 left-3 bg-primary text-white text-[10px] font-bold px-2.5 py-1 rounded-pill uppercase tracking-wider shadow-md">
-                  Featured
-                </div>
-              {/if}
-              <!-- Quick View Overlay -->
-              <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <span class="bg-white text-ink text-xs font-semibold px-4 py-2 rounded-pill shadow-lg translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-                  View Details
-                </span>
-              </div>
-            </div>
-            <div class="p-4">
-              <p class="text-[10px] text-ink-muted uppercase tracking-widest font-semibold mb-1">{product.brand}</p>
-              <h3 class="font-semibold text-ink text-sm mb-3 truncate">{product.name}</h3>
-              <div class="flex justify-between items-center">
-                <span class="text-base font-bold text-ink">{formatPrice(product.price)}</span>
-                <div class="w-8 h-8 rounded-full bg-canvas-subtle border border-surface-border flex items-center justify-center group-hover:bg-primary group-hover:border-primary group-hover:text-white transition-all duration-300">
-                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                  </svg>
-                </div>
-              </div>
-            </div>
-          </a>
+          <ProductCard {product} />
         {/each}
       {/if}
     </div>

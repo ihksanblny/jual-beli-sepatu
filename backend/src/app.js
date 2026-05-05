@@ -3,6 +3,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
+const compression = require('compression');
 const errorHandler = require('./middleware/errorHandler.middleware');
 
 const app = express();
@@ -26,6 +27,9 @@ if (process.env.NODE_ENV === 'development') {
 // Body Parser
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Compression
+app.use(compression());
 
 // Rate Limiting
 const apiLimiter = rateLimit({

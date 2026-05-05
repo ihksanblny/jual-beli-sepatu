@@ -16,6 +16,7 @@ const getAllProducts = async (queryParams) => {
     search,
     sale,
     sort,
+    featured,
     page = 1,
     limit = 10
   } = queryParams;
@@ -25,6 +26,9 @@ const getAllProducts = async (queryParams) => {
   // Filters
   if (category) query.category = category;
   if (brand) query.brand = brand;
+  if (featured === 'true' || featured === true) {
+    query.featured = true;
+  }
   if (minPrice || maxPrice) {
     query.price = {};
     if (minPrice) query.price.$gte = Number(minPrice);

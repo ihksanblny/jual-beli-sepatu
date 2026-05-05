@@ -7,7 +7,9 @@ const logger = require('../utils/logger');
 const connectDB = async () => {
   try {
     const conn = await mongoose.connect(process.env.DATABASE_URL, {
-      // Mongoose 6+ always uses these options
+      maxPoolSize: 10,
+      minPoolSize: 5,
+      maxIdleTimeMS: 30000,
     });
 
     logger.info(`MongoDB Connected: ${conn.connection.host}`);
