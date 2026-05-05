@@ -2,6 +2,13 @@
   import { onMount } from 'svelte';
   import { adminApi } from '$lib/api/admin.api';
   import dayjs from 'dayjs';
+  import CustomSelect from '$lib/components/CustomSelect.svelte';
+ 
+  let selectedRange = $state('7days');
+  const rangeOptions = [
+    { value: '7days', label: 'Last 7 Days' },
+    { value: '30days', label: 'Last 30 Days' }
+  ];
 
   let stats = $state<any>(null);
   let loading = $state(true);
@@ -130,15 +137,16 @@
             <h2 class="text-sm font-black text-ink uppercase tracking-[0.3em] mb-1">Performance</h2>
             <p class="text-2xl font-display font-bold text-ink">Weekly Revenue Trend</p>
           </div>
-          <div class="flex gap-4">
-            <div class="flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-xl border border-gray-100">
+          <div class="flex gap-6 items-center">
+            <div class="flex items-center gap-3 px-5 py-2.5 bg-gray-50 rounded-2xl border border-gray-100 flex-shrink-0">
               <span class="w-2.5 h-2.5 rounded-full bg-primary animate-pulse"></span>
-              <span class="text-xs font-bold text-ink">Live Data</span>
+              <span class="text-[10px] font-black text-ink uppercase tracking-widest whitespace-nowrap">Live Data</span>
             </div>
-            <select class="bg-white border border-gray-200 rounded-xl px-4 py-2 text-xs font-bold text-ink focus:outline-none focus:ring-2 focus:ring-primary/20">
-              <option>Last 7 Days</option>
-              <option>Last 30 Days</option>
-            </select>
+            <CustomSelect 
+              bind:value={selectedRange} 
+              options={rangeOptions} 
+              class="w-56"
+            />
           </div>
         </div>
 

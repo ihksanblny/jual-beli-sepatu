@@ -27,7 +27,7 @@ const getUsers = async (req, res, next) => {
     const result = await adminService.getAllUsers(req.query);
     res.status(200).json({
       success: true,
-      ...result
+      data: result
     });
   } catch (error) {
     next(error);
@@ -44,7 +44,7 @@ const getOrders = async (req, res, next) => {
     const result = await adminService.getAllOrders(req.query);
     res.status(200).json({
       success: true,
-      ...result
+      data: result
     });
   } catch (error) {
     next(error);
