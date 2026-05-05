@@ -1,15 +1,16 @@
 import { writable } from 'svelte/store';
 import { authApi } from '../api/auth.api';
 
-interface User {
+export interface User {
   id: string;
   email: string;
   firstName: string;
   lastName: string;
   role: string;
+  isEmailVerified: boolean;
 }
 
-interface AuthState {
+export interface AuthState {
   user: User | null;
   token: string | null;
   isAuthenticated: boolean;
@@ -104,6 +105,11 @@ function createAuthStore() {
         }));
       }
     },
+    updateUser: (user: User) => {
+      update(s => ({ ...s, user }));
+    },
+    update,
+    set,
   };
 }
 

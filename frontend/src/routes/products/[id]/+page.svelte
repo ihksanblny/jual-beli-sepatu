@@ -5,20 +5,26 @@
   import { products } from '$lib/stores/products';
   import { auth } from '$lib/stores/auth';
   import { cart } from '$lib/stores/cart';
+  import { wishlist } from '$lib/stores/wishlist';
   import ReviewSection from '$lib/components/ReviewSection.svelte';
 
   const productId = page.params.id;
   let selectedSize = $state('');
   let mainImageIndex = $state(0);
+  let wishlistLoading = $state(false);
 
   onMount(async () => {
     if (productId) {
       await products.fetchProduct(productId);
+      if ($auth.isAuthenticated) {
+        await wishlist.fetchWishlist();
+      }
     }
   });
 
   const product = $derived($products.currentProduct);
   const loading = $derived($products.loading);
+  const isInWishlist = $derived(product ? wishlist.isInWishlist(product._id, $wishlist.items) : false);
 
   const formattedPrice = $derived(product ? new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -49,6 +55,22 @@
       goto('/cart');
     } catch (err) {
       console.error(err);
+    }
+  }
+
+  async function toggleWishlist() {
+    if (!$auth.isAuthenticated) {
+      goto('/auth/login');
+      return;
+    }
+
+    if (!product) return;
+
+    wishlistLoading = true;
+    try {
+      await wishlist.toggle(product._id);
+    } finally {
+      wishlistLoading = false;
     }
   }
 </script>
@@ -170,11 +192,15 @@
               </svg>
               Add to Bag
             </button>
-            <button class="w-full h-16 border-2 border-gray-100 rounded-2xl font-bold text-lg hover:border-ink transition-all flex items-center justify-center gap-3 text-ink">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <button 
+              onclick={toggleWishlist}
+              disabled={wishlistLoading}
+              class="w-full h-16 border-2 border-gray-100 rounded-2xl font-bold text-lg hover:border-ink transition-all flex items-center justify-center gap-3 {isInWishlist ? 'bg-red-50 border-red-100 text-red-500' : 'text-ink'}"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill={isInWishlist ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
               </svg>
-              Add to Wishlist
+              {isInWishlist ? 'In Wishlist' : 'Add to Wishlist'}
             </button>
           </div>
 

@@ -42,7 +42,7 @@
 
     try {
       const response = await authApi.updateProfile(formData);
-      auth.update(state => ({ ...state, user: response.data.user }));
+      auth.updateUser(response.data.user);
       message = { text: 'Profile updated successfully!', type: 'success' };
     } catch (error: any) {
       message = { text: error.response?.data?.message || 'Failed to update profile', type: 'error' };

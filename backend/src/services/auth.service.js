@@ -89,7 +89,16 @@ const updateUserProfile = async (userId, updateData) => {
     const existingUser = await User.findOne({ email, _id: { $ne: userId } });
     if (existingUser) throw new Error('Email is already in use');
   }
-  return await User.findByIdAndUpdate(userId, { firstName, lastName, email }, { new: true, runValidators: true });
+  const user = await User.findByIdAndUpdate(userId, { firstName, lastName, email }, { new: true, runValidators: true });
+  
+  return {
+    id: user._id,
+    email: user.email,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    role: user.role,
+    isEmailVerified: user.isEmailVerified
+  };
 };
 
 /**

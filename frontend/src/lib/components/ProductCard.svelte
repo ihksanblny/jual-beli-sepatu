@@ -1,16 +1,39 @@
 <script lang="ts">
   import type { Product } from '$lib/stores/products';
+  import { wishlist } from '$lib/stores/wishlist';
+  import { auth } from '$lib/stores/auth';
+  import { goto } from '$app/navigation';
 
   let { product } = $props<{ product: Product }>();
   
-  const formattedPrice = new Intl.NumberFormat('en-US', {
+  const formattedPrice = $derived(new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD'
-  }).format(product.price);
+  }).format(product.price));
 
-  const discountPrice = product.discountPrice 
+  const discountPrice = $derived(product.discountPrice 
     ? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(product.discountPrice)
-    : null;
+    : null);
+
+  const isInWishlist = $derived(wishlist.isInWishlist(product._id, $wishlist.items));
+  let wishlistLoading = $state(false);
+
+  async function toggleWishlist(e: MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!$auth.isAuthenticated) {
+      goto('/auth/login');
+      return;
+    }
+
+    wishlistLoading = true;
+    try {
+      await wishlist.toggle(product._id);
+    } finally {
+      wishlistLoading = false;
+    }
+  }
 </script>
 
 <div class="group bg-surface-card rounded-md overflow-hidden transition-all hover:shadow-lg flex flex-col h-full">
@@ -52,9 +75,14 @@
         {/if}
       </div>
       
-      <button class="w-10 h-10 rounded-pill border border-gray-200 flex items-center justify-center hover:bg-primary hover:text-white transition-all text-ink hover:border-primary">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+      <button 
+        onclick={toggleWishlist}
+        disabled={wishlistLoading}
+        aria-label={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
+        class="w-10 h-10 rounded-pill border {isInWishlist ? 'bg-red-50 text-red-500 border-red-100' : 'border-gray-200 text-ink hover:bg-primary hover:text-white hover:border-primary'} flex items-center justify-center transition-all"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill={isInWishlist ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
         </svg>
       </button>
     </div>
