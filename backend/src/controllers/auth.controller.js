@@ -140,11 +140,61 @@ const resendVerification = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc    Update current user password
+ * @route   PUT /api/v1/auth/update-password
+ * @access  Private
+ */
+const updatePassword = async (req, res, next) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide current and new passwords'
+      });
+    }
+
+    const result = await authService.updateUserPassword(req.user._id, currentPassword, newPassword);
+    res.status(200).json({
+      success: true,
+      message: result.message
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+/**
+ * @desc    Delete current user account
+ * @route   DELETE /api/v1/auth/delete-me
+ * @access  Private
+ */
+const deleteMe = async (req, res, next) => {
+  try {
+    const result = await authService.deleteUserAccount(req.user._id);
+    res.status(200).json({
+      success: true,
+      message: result.message
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
 module.exports = {
   register,
   login,
   getMe,
   updateMe,
   verifyEmail,
-  resendVerification
+  resendVerification,
+  updatePassword,
+  deleteMe
 };

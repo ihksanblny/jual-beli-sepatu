@@ -43,4 +43,12 @@ export const authApi = {
     const response = await api.post('/auth/resend-verification', { email });
     return response.data;
   },
+  updatePassword: async (passwordData: any) => {
+    const response = await api.put('/auth/update-password', passwordData);
+    return response.data;
+  },
+  deleteAccount: async () => {
+    const response = await api.delete('/auth/delete-me');
+    return response.data;
+  },
 };

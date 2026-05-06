@@ -63,10 +63,10 @@ const verifyEmail = async (token) => {
  */
 const loginUser = async (email, password) => {
   const user = await User.findOne({ email }).select('+password');
-  if (!user) throw new Error('Invalid credentials');
+  if (!user) throw new Error('Email or Password is wrong');
 
   const isMatch = await user.comparePassword(password);
-  if (!isMatch) throw new Error('Invalid credentials');
+  if (!isMatch) throw new Error('Email or Password is wrong');
 
   // Check if email is verified (bypass for admin)
   if (!user.isEmailVerified && user.role !== 'admin') {
@@ -124,10 +124,39 @@ const resendVerification = async (email) => {
   return { message: 'Verification email resent successfully' };
 };
 
+/**
+ * Update user password
+ */
+const updateUserPassword = async (userId, currentPassword, newPassword) => {
+  const user = await User.findById(userId).select('+password');
+  if (!user) throw new Error('User not found');
+
+  const isMatch = await user.comparePassword(currentPassword);
+  if (!isMatch) throw new Error('Current password is incorrect');
+
+  user.password = newPassword;
+  await user.save();
+
+  return { message: 'Password updated successfully' };
+};
+
+/**
+ * Delete user account
+ */
+const deleteUserAccount = async (userId) => {
+  const user = await User.findById(userId);
+  if (!user) throw new Error('User not found');
+
+  await User.findByIdAndDelete(userId);
+  return { message: 'Account deleted successfully' };
+};
+
 module.exports = {
   registerUser,
   loginUser,
   updateUserProfile,
   verifyEmail,
-  resendVerification
+  resendVerification,
+  updateUserPassword,
+  deleteUserAccount
 };
