@@ -6,7 +6,8 @@
   import CheckoutForm from '$lib/components/CheckoutForm.svelte';
 
   onMount(async () => {
-    if (!$auth.isAuthenticated) {
+    // Check token instead of isAuthenticated to prevent race condition on page refresh
+    if (!$auth.token) {
       goto('/auth/login');
       return;
     }

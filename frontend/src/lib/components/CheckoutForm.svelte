@@ -129,6 +129,37 @@
       processing = false;
     }
   }
+
+  async function handleDummyPayment() {
+    if (!selectedAddressId) {
+      errorMessage = 'Please select a shipping address first';
+      return;
+    }
+
+    processing = true;
+    errorMessage = '';
+
+    try {
+      // Simulate network delay for realism
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      // Create Order on our backend with dummy payment intent
+      const orderData = await orderApi.createOrder({
+        shippingAddressId: selectedAddressId,
+        billingAddressId: selectedAddressId,
+        paymentMethod: 'card',
+        stripePaymentIntentId: 'pi_dummy_test_' + Date.now()
+      });
+
+      // Clear cart and redirect
+      await cart.clearCart();
+      goto(`/checkout/success?orderNumber=${orderData.data.orderNumber}`);
+
+    } catch (err: any) {
+      errorMessage = err.message || 'An unexpected error occurred during dummy payment';
+      processing = false;
+    }
+  }
 </script>
 
 <div class="bg-white p-10 rounded-[48px] shadow-sm border border-gray-100">
@@ -204,7 +235,8 @@
         </div>
       {/if}
 
-      <div class="pt-4">
+      <div class="pt-4 space-y-4">
+        <!-- Main Stripe Submit -->
         <button 
           type="submit" 
           disabled={processing || !stripe || !selectedAddressId}
@@ -218,6 +250,21 @@
         <p class="text-center text-[10px] text-gray-400 font-bold mt-6 uppercase tracking-widest">
           Your payment is secured
         </p>
+
+        <!-- Dummy Testing Button -->
+        <div class="pt-6 mt-6 border-t border-gray-100">
+          <button 
+            type="button" 
+            onclick={handleDummyPayment}
+            disabled={processing || !selectedAddressId}
+            class="w-full bg-orange-50 text-orange-600 border-2 border-dashed border-orange-200 py-4 rounded-[24px] font-black text-xs uppercase tracking-[0.2em] hover:bg-orange-100 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {processing ? 'Processing...' : 'Simulate Dummy Payment (Test Mode)'}
+          </button>
+          <p class="text-center text-[10px] text-orange-400 font-bold mt-2 uppercase tracking-widest">
+            For development testing only
+          </p>
+        </div>
       </div>
     </form>
   {/if}

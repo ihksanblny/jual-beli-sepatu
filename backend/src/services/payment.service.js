@@ -1,4 +1,3 @@
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const logger = require('../utils/logger');
 
 /**
@@ -6,6 +5,7 @@ const logger = require('../utils/logger');
  */
 const createPaymentIntent = async (amount, currency = 'usd', metadata = {}) => {
   try {
+    const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(amount * 100), // Stripe expects amount in cents
       currency,
@@ -26,7 +26,13 @@ const createPaymentIntent = async (amount, currency = 'usd', metadata = {}) => {
  * Verify a payment intent status
  */
 const verifyPayment = async (paymentIntentId) => {
+  // Bypass Stripe verification for dummy local testing
+  if (paymentIntentId && paymentIntentId.startsWith('pi_dummy_test_')) {
+    return true;
+  }
+
   try {
+    const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
     return paymentIntent.status === 'succeeded';
   } catch (error) {

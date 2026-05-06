@@ -4,6 +4,7 @@
 
   let loading = $state(true);
   let orders = $state<any[]>([]);
+  let downloadingId = $state<string | null>(null);
 
   onMount(async () => {
     try {
@@ -15,6 +16,18 @@
       loading = false;
     }
   });
+
+  async function handleDownloadInvoice(id: string, orderNumber: string) {
+    downloadingId = id;
+    try {
+      await orderApi.downloadInvoice(id, orderNumber);
+    } catch (error) {
+      console.error('Failed to download invoice', error);
+      alert('Failed to download invoice. Please try again.');
+    } finally {
+      downloadingId = null;
+    }
+  }
 
   function formatDate(dateString: string) {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -82,7 +95,7 @@
                 </div>
                 <div>
                   <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">TOTAL AMOUNT</p>
-                  <p class="font-bold text-ink text-sm">{formatPrice(order.totalAmount)}</p>
+                  <p class="font-bold text-ink text-sm">{formatPrice(order.total)}</p>
                 </div>
               </div>
               <span class="px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] border {getStatusClass(order.status)}">
@@ -96,10 +109,10 @@
                 <div class="flex items-center justify-between group">
                   <div class="flex items-center gap-6">
                     <div class="w-20 h-20 bg-gray-50 rounded-2xl overflow-hidden border border-gray-100 flex-shrink-0">
-                      <img src={item.product?.images?.[0]?.url || 'https://via.placeholder.com/150'} alt="Product" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                      <img src={item.image || 'https://via.placeholder.com/150'} alt="Product" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                     </div>
                     <div>
-                      <p class="font-bold text-ink">{item.product?.name || 'Unknown Product'}</p>
+                      <p class="font-bold text-ink">{item.name || 'Unknown Product'}</p>
                       <div class="flex items-center gap-3 mt-1">
                         <span class="text-xs font-medium text-ink-muted">Size: <span class="text-ink font-bold">{item.size}</span></span>
                         <span class="text-xs font-medium text-ink-muted">Qty: <span class="text-ink font-bold">{item.quantity}</span></span>
@@ -115,7 +128,13 @@
 
             <!-- Order Footer -->
             <div class="px-10 py-6 border-t border-gray-50 flex justify-end gap-4">
-              <button class="px-6 py-2.5 rounded-xl text-xs font-bold text-ink hover:bg-gray-50 transition-all">Download Invoice</button>
+              <button 
+                onclick={() => handleDownloadInvoice(order._id, order.orderNumber)}
+                disabled={downloadingId === order._id}
+                class="px-6 py-2.5 rounded-xl text-xs font-bold text-ink hover:bg-gray-50 transition-all disabled:opacity-50"
+              >
+                {downloadingId === order._id ? 'Downloading...' : 'Download Invoice'}
+              </button>
               <button class="px-6 py-2.5 rounded-xl bg-ink text-white text-xs font-bold hover:bg-black transition-all">Track Shipment</button>
             </div>
           </div>
