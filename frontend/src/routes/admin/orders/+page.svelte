@@ -98,8 +98,8 @@
       <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
     </div>
   {:else}
-    <div class="bg-white rounded-[32px] shadow-sm border border-gray-100 overflow-hidden">
-      <div class="overflow-x-auto">
+    <div class="bg-white rounded-[32px] shadow-sm border border-gray-100">
+      <div class="overflow-visible">
         <table class="w-full text-left border-collapse">
           <thead>
             <tr class="bg-gray-50/50">

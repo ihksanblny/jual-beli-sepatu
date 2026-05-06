@@ -18,11 +18,13 @@ export interface AuthState {
   error: string | null;
 }
 
+const hasToken = typeof localStorage !== 'undefined' && !!localStorage.getItem('authToken');
+
 const initialState: AuthState = {
   user: null,
-  token: typeof localStorage !== 'undefined' ? localStorage.getItem('authToken') : null,
+  token: hasToken ? localStorage.getItem('authToken') : null,
   isAuthenticated: false,
-  loading: false,
+  loading: hasToken,
   error: null,
 };
 
@@ -82,8 +84,11 @@ function createAuthStore() {
       });
     },
     init: async () => {
-      const token = localStorage.getItem('authToken');
-      if (!token) return;
+      const token = typeof localStorage !== 'undefined' ? localStorage.getItem('authToken') : null;
+      if (!token) {
+        update(s => ({ ...s, loading: false }));
+        return;
+      }
 
       update(s => ({ ...s, loading: true }));
       try {

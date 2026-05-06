@@ -193,12 +193,7 @@
           </div>
           
           <div class="space-y-6">
-            {#each [
-              { name: 'Lifestyle', percent: 65, color: 'bg-primary' },
-              { name: 'Running', percent: 42, color: 'bg-orange-500' },
-              { name: 'Basketball', percent: 28, color: 'bg-purple-500' },
-              { name: 'Training', percent: 15, color: 'bg-blue-500' }
-            ] as cat}
+            {#each stats.categories || [] as cat}
               <div class="space-y-2">
                 <div class="flex justify-between items-end">
                   <span class="text-sm font-bold text-ink">{cat.name}</span>

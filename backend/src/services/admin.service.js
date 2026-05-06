@@ -17,6 +17,52 @@ const getDashboardStats = async () => {
   ]);
   const totalRevenue = revenueResult[0]?.totalRevenue || 0;
 
+  // Calculate category distribution dynamically
+  const completedOrders = await Order.find({ paymentStatus: 'completed' }).populate('items.productId');
+  const salesByCategory = { men: 0, women: 0, kids: 0, unisex: 0 };
+  let totalCategorySales = 0;
+
+  for (const order of completedOrders) {
+    for (const item of order.items) {
+      if (item.productId) {
+        const cat = item.productId.category || 'unisex';
+        const itemSales = item.price * item.quantity;
+        salesByCategory[cat] = (salesByCategory[cat] || 0) + itemSales;
+        totalCategorySales += itemSales;
+      }
+    }
+  }
+
+  // Fallback to product count distribution if no sales exist yet
+  if (totalCategorySales === 0) {
+    const categoryCounts = await Product.aggregate([
+      { $group: { _id: '$category', count: { $sum: 1 } } }
+    ]);
+    const countsMap = {};
+    categoryCounts.forEach(c => {
+      countsMap[c._id] = c.count;
+    });
+
+    ['men', 'women', 'kids', 'unisex'].forEach(catName => {
+      const count = countsMap[catName] || 0;
+      salesByCategory[catName] = count;
+      totalCategorySales += count;
+    });
+  }
+
+  // Map backend categories to beautiful frontend entities
+  const categories = ['men', 'women', 'kids', 'unisex'].map(catName => {
+    const rawValue = salesByCategory[catName] || 0;
+    const percent = totalCategorySales > 0 ? Math.round((rawValue / totalCategorySales) * 100) : 0;
+    const labelMap = { men: 'Men', women: 'Women', kids: 'Kids', unisex: 'Unisex' };
+    const colorMap = { men: 'bg-primary', women: 'bg-orange-500', kids: 'bg-purple-500', unisex: 'bg-blue-500' };
+    return {
+      name: labelMap[catName] || catName,
+      percent,
+      color: colorMap[catName] || 'bg-gray-500'
+    };
+  });
+
   // Get recent orders
   const recentOrders = await Order.find()
     .sort('-createdAt')
@@ -28,6 +74,7 @@ const getDashboardStats = async () => {
     totalProducts,
     totalOrders,
     totalRevenue,
+    categories,
     recentOrders
   };
 };
@@ -116,9 +163,19 @@ const updateOrderStatus = async (orderId, statusData) => {
   return order;
 };
 
+/**
+ * Get single order by ID (Admin version)
+ */
+const getOrderById = async (orderId) => {
+  const order = await Order.findById(orderId).populate('userId', 'firstName lastName email');
+  if (!order) throw new Error('Order not found');
+  return order;
+};
+
 module.exports = {
   getDashboardStats,
   getAllUsers,
   getAllOrders,
-  updateOrderStatus
+  updateOrderStatus,
+  getOrderById
 };

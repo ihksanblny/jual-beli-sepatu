@@ -3,7 +3,8 @@ const {
   getDashboard,
   getUsers,
   getOrders,
-  updateOrderStatus
+  updateOrderStatus,
+  getOrderById
 } = require('../controllers/admin.controller');
 const { protect, authorize } = require('../middleware/auth.middleware');
 
@@ -16,6 +17,7 @@ router.use(authorize('admin'));
 router.get('/dashboard', getDashboard);
 router.get('/users', getUsers);
 router.get('/orders', getOrders);
+router.get('/orders/:id', getOrderById);
 router.put('/orders/:id/status', updateOrderStatus);
 
 module.exports = router;

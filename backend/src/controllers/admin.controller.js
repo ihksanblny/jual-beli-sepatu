@@ -68,9 +68,27 @@ const updateOrderStatus = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc    Get order by ID
+ * @route   GET /api/v1/admin/orders/:id
+ * @access  Private/Admin
+ */
+const getOrderById = async (req, res, next) => {
+  try {
+    const order = await adminService.getOrderById(req.params.id);
+    res.status(200).json({
+      success: true,
+      data: order
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getDashboard,
   getUsers,
   getOrders,
-  updateOrderStatus
+  updateOrderStatus,
+  getOrderById
 };
