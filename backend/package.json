@@ -5,7 +5,8 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
-    "test": "jest --watchAll",
+    "test": "jest --runInBand --forceExit",
+    "test:watch": "jest --watchAll",
     "seed": "node src/utils/seeder.js"
   },
   "keywords": [],

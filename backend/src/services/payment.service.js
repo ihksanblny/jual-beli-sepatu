@@ -26,8 +26,8 @@ const createPaymentIntent = async (amount, currency = 'usd', metadata = {}) => {
  * Verify a payment intent status
  */
 const verifyPayment = async (paymentIntentId) => {
-  // Bypass Stripe verification for dummy local testing
-  if (paymentIntentId && paymentIntentId.startsWith('pi_dummy_test_')) {
+  // Bypass Stripe verification for dummy local testing (disabled in production)
+  if (process.env.NODE_ENV !== 'production' && paymentIntentId && paymentIntentId.startsWith('pi_dummy_test_')) {
     return true;
   }
 

@@ -23,7 +23,7 @@ const registerUser = async (userData) => {
     lastName,
     verificationToken,
     verificationTokenExpires,
-    isEmailVerified: email.includes('admin@') // Auto-verify admins for convenience
+    isEmailVerified: process.env.NODE_ENV !== 'production' && email.includes('admin@') // Auto-verify admins for convenience in dev only
   });
 
   // Send verification email
