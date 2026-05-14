@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, tick } from 'svelte';
   import { loadStripe, type Stripe, type StripeElements, type StripePaymentElement } from '@stripe/stripe-js';
   import { paymentApi } from '$lib/api/payment.api';
   import { orderApi } from '$lib/api/order.api';
@@ -9,9 +9,9 @@
 
   let { amount } = $props<{ amount: number }>();
 
-  let stripe = $state<Stripe | null>(null);
-  let elements = $state<StripeElements | null>(null);
-  let paymentElement = $state<StripePaymentElement | null>(null);
+  let stripe: Stripe | null = null;
+  let elements: StripeElements | null = null;
+  let paymentElement: StripePaymentElement | null = null;
   let clientSecret = $state<string | undefined>(undefined);
   
   let loading = $state(true);
@@ -65,22 +65,27 @@
       if (clientSecret) {
         elements = stripe.elements({ clientSecret, appearance: { theme: 'stripe' } });
         paymentElement = elements.create('payment');
-        
-        // Small delay to ensure DOM element is ready
-        setTimeout(() => {
-          if (paymentElement) {
-            paymentElement.mount('#payment-element');
-            console.log('[Checkout] Payment Element mounted.');
-          }
-        }, 150);
       }
     } catch (err: any) {
       console.error('[Checkout] Initialization failed:', err);
-      errorMessage = err.response?.data?.message || err.message || 'Error initializing checkout';
+      errorMessage = err.response?.data?.error?.message || err.response?.data?.message || err.message || 'Error initializing checkout';
     } finally {
       clearTimeout(timeout);
       loading = false;
       console.log('[Checkout] Initialization complete. Loading state:', loading);
+      
+      // Tunggu Svelte merender HTML setelah loading = false
+      await tick();
+      
+      if (paymentElement) {
+        const mountContainer = document.querySelector('#payment-element');
+        if (mountContainer) {
+          paymentElement.mount('#payment-element');
+          console.log('[Checkout] Payment Element mounted successfully.');
+        } else {
+          console.error('[Checkout] #payment-element div not found in DOM!');
+        }
+      }
     }
   });
 
@@ -125,7 +130,7 @@
       }
 
     } catch (err: any) {
-      errorMessage = err.message || 'An unexpected error occurred';
+      errorMessage = err.response?.data?.error?.message || err.message || 'An unexpected error occurred';
       processing = false;
     }
   }
@@ -156,7 +161,7 @@
       goto(`/checkout/success?orderNumber=${orderData.data.orderNumber}`);
 
     } catch (err: any) {
-      errorMessage = err.message || 'An unexpected error occurred during dummy payment';
+      errorMessage = err.response?.data?.error?.message || err.message || 'An unexpected error occurred during dummy payment';
       processing = false;
     }
   }
