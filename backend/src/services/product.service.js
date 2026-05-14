@@ -107,16 +107,8 @@ const deleteProduct = async (id) => {
   const product = await Product.findById(id);
   if (!product) throw new Error('Product not found');
 
-  // Delete images from Cloudinary
-  if (product.images && product.images.length > 0) {
-    for (const img of product.images) {
-      if (img.publicId) {
-        await deleteImage(img.publicId);
-      }
-    }
-  }
-
-  await Product.findByIdAndDelete(id);
+  product.isActive = false;
+  await product.save();
   return { message: 'Product deleted' };
 };
 
