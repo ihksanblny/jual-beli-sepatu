@@ -1,29 +1,44 @@
 const jwt = require('jsonwebtoken');
 
 /**
- * Generate JWT token
- * @param {string} userId - User ID
- * @param {string} role - User role
- * @returns {string} JWT token
+ * Generate Access Token (Short-lived)
  */
-const generateToken = (userId, role) => {
+const generateAccessToken = (userId, role) => {
   return jwt.sign(
     { userId, role },
     process.env.JWT_SECRET,
-    { expiresIn: process.env.JWT_EXPIRY || '24h' }
+    { expiresIn: process.env.JWT_ACCESS_EXPIRY || '15m' }
   );
 };
 
 /**
- * Verify JWT token
- * @param {string} token - JWT token
- * @returns {Object} Decoded token
+ * Generate Refresh Token (Long-lived)
+ */
+const generateRefreshToken = (userId) => {
+  return jwt.sign(
+    { userId },
+    process.env.JWT_REFRESH_SECRET || 'supersecretrefreshkey',
+    { expiresIn: process.env.JWT_REFRESH_EXPIRY || '7d' }
+  );
+};
+
+/**
+ * Verify Access Token
  */
 const verifyToken = (token) => {
   return jwt.verify(token, process.env.JWT_SECRET);
 };
 
+/**
+ * Verify Refresh Token
+ */
+const verifyRefreshToken = (token) => {
+  return jwt.verify(token, process.env.JWT_REFRESH_SECRET || 'supersecretrefreshkey');
+};
+
 module.exports = {
-  generateToken,
+  generateAccessToken,
+  generateRefreshToken,
   verifyToken,
+  verifyRefreshToken
 };

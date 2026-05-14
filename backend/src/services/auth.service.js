@@ -1,6 +1,6 @@
 const crypto = require('crypto');
 const User = require('../models/User');
-const { generateToken } = require('../utils/jwtUtils');
+const { generateAccessToken, generateRefreshToken, verifyRefreshToken } = require('../utils/jwtUtils');
 const logger = require('../utils/logger');
 const { sendVerificationEmail } = require('./email.service');
 
@@ -29,11 +29,17 @@ const registerUser = async (userData) => {
   // Send verification email
   await sendVerificationEmail(user, verificationToken);
 
-  const token = generateToken(user._id, user.role);
+  const accessToken = generateAccessToken(user._id, user.role);
+  const refreshToken = generateRefreshToken(user._id);
+
+  // Save refresh token to user
+  user.refreshTokens.push(refreshToken);
+  await user.save();
 
   return {
     user: { id: user._id, email: user.email, firstName: user.firstName, lastName: user.lastName, role: user.role, isEmailVerified: user.isEmailVerified },
-    token
+    token: accessToken,
+    refreshToken
   };
 };
 
@@ -73,12 +79,58 @@ const loginUser = async (email, password) => {
     throw new Error('Please verify your email address before logging in');
   }
 
-  const token = generateToken(user._id, user.role);
+  const accessToken = generateAccessToken(user._id, user.role);
+  const refreshToken = generateRefreshToken(user._id);
+
+  // Save refresh token to user (keep only last 5 sessions to prevent array bloat)
+  user.refreshTokens.push(refreshToken);
+  if (user.refreshTokens.length > 5) user.refreshTokens.shift();
+  await user.save();
 
   return {
     user: { id: user._id, email: user.email, firstName: user.firstName, lastName: user.lastName, role: user.role, isEmailVerified: user.isEmailVerified },
-    token
+    token: accessToken,
+    refreshToken
   };
+};
+
+/**
+ * Refresh Access Token
+ */
+const refreshAccessToken = async (token) => {
+  if (!token) throw new Error('Refresh token is required');
+
+  const decoded = verifyRefreshToken(token);
+  const user = await User.findById(decoded.userId);
+
+  if (!user || !user.refreshTokens.includes(token)) {
+    throw new Error('Invalid refresh token');
+  }
+
+  const newAccessToken = generateAccessToken(user._id, user.role);
+  const newRefreshToken = generateRefreshToken(user._id);
+
+  // Replace old refresh token with new one (Sliding Session)
+  user.refreshTokens = user.refreshTokens.filter(t => t !== token);
+  user.refreshTokens.push(newRefreshToken);
+  await user.save();
+
+  return {
+    token: newAccessToken,
+    refreshToken: newRefreshToken
+  };
+};
+
+/**
+ * Logout user (Clear Refresh Token)
+ */
+const logoutUser = async (token) => {
+  const user = await User.findOne({ refreshTokens: token });
+  if (user) {
+    user.refreshTokens = user.refreshTokens.filter(t => t !== token);
+    await user.save();
+  }
+  return { message: 'Logged out successfully' };
 };
 
 /**
@@ -158,5 +210,7 @@ module.exports = {
   verifyEmail,
   resendVerification,
   updateUserPassword,
-  deleteUserAccount
+  deleteUserAccount,
+  refreshAccessToken,
+  logoutUser
 };
