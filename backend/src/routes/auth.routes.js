@@ -1,5 +1,5 @@
 const express = require('express');
-const { register, login, getMe, updateMe, verifyEmail, resendVerification, updatePassword, deleteMe } = require('../controllers/auth.controller');
+const { register, login, getMe, updateMe, verifyEmail, resendVerification, updatePassword, deleteMe, refresh, logout } = require('../controllers/auth.controller');
 const { protect } = require('../middleware/auth.middleware');
 const validate = require('../middleware/validation.middleware');
 const { authValidators } = require('../utils/validators');
