@@ -33,7 +33,15 @@ const authValidators = {
     firstName: Joi.string().required(),
     lastName: Joi.string().required(),
     email: Joi.string().email().required(),
-    password: Joi.string().min(8).required()
+    password: Joi.string()
+      .min(8)
+      .pattern(new RegExp('^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)'))
+      .required()
+      .messages({
+        'string.min': 'Password minimal harus 8 karakter.',
+        'string.pattern.base': 'Password harus mengandung kombinasi huruf besar, huruf kecil, dan angka.',
+        'any.required': 'Password wajib diisi.'
+      })
   }),
   login: Joi.object({
     email: Joi.string().email().required(),
